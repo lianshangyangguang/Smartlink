@@ -24,7 +24,7 @@ public class UDPHelper {
     public static final int HANDLER_MESSAGE_RECEIVE_MSG = 0x02;
     private WeakReference<Context> mActivityReference;
     private WifiManager.MulticastLock lock;
-	private boolean isStartSuccess=false;
+    private boolean isStartSuccess=false;
 
     public UDPHelper(Context mContext, int port) {
         this.port = port;
@@ -71,7 +71,7 @@ public class UDPHelper {
             datagramSocket.setSoTimeout(120*1000);
             DatagramPacket datagramPacket = new DatagramPacket(message,
                     message.length);
-			isStartSuccess=true;
+            isStartSuccess=true;
             while (!IsThreadDisable) {
                 // 准备接收数据
                 MulticastLock();
