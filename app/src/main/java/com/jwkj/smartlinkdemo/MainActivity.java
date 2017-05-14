@@ -14,36 +14,40 @@ import android.widget.TextView;
 
 import com.mediatek.elian.ElianNative;
 
+import java.net.InetAddress;
+
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
     private Context context;
-    TextView tx_wifiName,tx_receive;
-    Button bt_send,bt_stop;
+    TextView tx_wifiName, tx_receive;
+    Button bt_send, bt_stop;
     EditText et_pwd;
     ElianNative elain;
     String ssid;
-    String pwd="";
-    boolean isRegFilter=false;
-//    boolean is5GWifi=false;
+    String pwd = "";
+    boolean isRegFilter = false;
+    //    boolean is5GWifi=false;
 //    boolean isWifiEncrypt=false;
     public UDPHelper mHelper;
     WifiManager wifiManager;
-    boolean isSend=false;
+    boolean isSend = false;
     private SmartLink smartLink;
+
     static {
         System.loadLibrary("elianjni");
     }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        context=this;
+        context = this;
         initUI();
 //        currenWifi();
 //        regFilter();
         //监听UDP广播
-        mHelper = new UDPHelper(context,9988);
-        listen();
+        mHelper = new UDPHelper(context);
+//        listen();
         smartLink = new SmartLink(this, new SmartLink.Deal() {
             @Override
             public void onNoSsid() {
@@ -55,19 +59,36 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 tx_wifiName.setText(ssid);
             }
         });
-        mHelper.StartListen();
+         mHelper.receive(9988, handle);
     }
-    public void initUI(){
-        tx_wifiName=(TextView)findViewById(R.id.tx_wifiName);
-        tx_receive=(TextView)findViewById(R.id.tx_receive);
-        et_pwd=(EditText)findViewById(R.id.et_pwd);
-        bt_send=(Button)findViewById(R.id.bt_send);
-        bt_stop=(Button)findViewById(R.id.bt_stop);
+
+
+    private void parseReceiveData(ReceiveDatagramPacket receiveData) {
+
+        DeviceInfo deviceInfo = parseData(receiveData);
+        String info = deviceInfo.toString();
+        if (Integer.parseInt(deviceInfo.getFrag()) == 0) {
+            info = info + "无密码";
+        } else {
+            info = info + "有密码";
+        }
+        tx_receive.append(info + "\n\n");
+
+    }
+
+
+    public void initUI() {
+        tx_wifiName = (TextView) findViewById(R.id.tx_wifiName);
+        tx_receive = (TextView) findViewById(R.id.tx_receive);
+        et_pwd = (EditText) findViewById(R.id.et_pwd);
+        bt_send = (Button) findViewById(R.id.bt_send);
+        bt_stop = (Button) findViewById(R.id.bt_stop);
         bt_send.setOnClickListener(this);
         bt_stop.setOnClickListener(this);
 
     }
-//    public void regFilter(){
+
+    //    public void regFilter(){
 //        IntentFilter filter=new IntentFilter();
 //        filter.addAction("android.net.conn.CONNECTIVITY_CHANGE");
 //        registerReceiver(br,filter);
@@ -83,9 +104,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 //    };
     @Override
     public void onClick(View v) {
-        switch (v.getId()){
+        switch (v.getId()) {
             case R.id.bt_send:
-                pwd=et_pwd.getText().toString().trim();
+                pwd = et_pwd.getText().toString().trim();
 //                if (!isWifiConnected()||ssid == null || ssid.equals("")||ssid.equals("<unknown ssid>")) {
 //                    Toast.makeText(context,"请先将手机连接到WiFi",Toast.LENGTH_SHORT).show();
 //                    return;
@@ -115,7 +136,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 break;
         }
     }
-//    //开始发包
+
+    //    //开始发包
 //    private void sendWifi(){
 //        smartLink.sendWifi();
 //    }
@@ -123,36 +145,40 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private void stopSendWifi() {
         smartLink.stopSendWifi();
     }
-    void listen() {
-        mHelper.setCallBack(new Handler() {
 
-            @Override
-            public void handleMessage(Message msg) {
-                // TODO Auto-generated method stub
-                switch (msg.what) {
-                    case UDPHelper.HANDLER_MESSAGE_BIND_ERROR:
-                        Log.e("my", "HANDLER_MESSAGE_BIND_ERROR");
-                        break;
-                    case UDPHelper.HANDLER_MESSAGE_RECEIVE_MSG:
-                        Bundle bundle = msg.getData();
-                        String deviceId = bundle.getString("contactId");//设备ID
-                        String frag = bundle.getString("frag");//有无密码标记
-                        String ip = bundle.getString("ip");//id地址
-                        int type = bundle.getInt("type", 0);//设备主类型
-                        int subType = bundle.getInt("subType", 0);//设备子类型
-                        String deviceInfo="deviceId="+deviceId+" deviceType="+type+" subType="+subType+" ip="+ip;
-                        if (Integer.parseInt(frag) == 0) {
-                            deviceInfo=deviceInfo+"无密码";
-                        } else {
-                            deviceInfo=deviceInfo+"有密码";
-                        }
-                        tx_receive.append(deviceInfo+"\n\n");
-                        break;
-                }
+    //    void listen() {
+//        mHelper.setCallBack(
+    Handler handle = new Handler() {
+
+        @Override
+        public void handleMessage(Message msg) {
+            // TODO Auto-generated method stub
+            switch (msg.what) {
+                case UDPHelper.RECEIVE_MSG_ERROR:
+                    Log.e("my", "HANDLER_MESSAGE_BIND_ERROR");
+                    break;
+                case UDPHelper.RECEIVE_MSG_SUCCESS:
+                    Bundle bundle = msg.getData();
+                    ReceiveDatagramPacket receiveData = (ReceiveDatagramPacket) bundle.getSerializable("receiveData");
+//                    String deviceId = bundle.getString("contactId");//设备ID
+//                    String frag = bundle.getString("frag");//有无密码标记
+//                    String ip = bundle.getString("ip");//id地址
+//                    int type = bundle.getInt("type", 0);//设备主类型
+//                    int subType = bundle.getInt("subType", 0);//设备子类型
+//                    String deviceInfo = "deviceId=" + deviceId + " deviceType=" + type + " subType=" + subType + " ip=" + ip;
+//                    if (Integer.parseInt(frag) == 0) {
+//                        deviceInfo = deviceInfo + "无密码";
+//                    } else {
+//                        deviceInfo = deviceInfo + "有密码";
+//                    }
+//                    tx_receive.append(deviceInfo + "\n\n");
+                    parseReceiveData(receiveData);
+                    break;
             }
-
-        });
-    }
+        }
+//
+    };
+//    }
 //    private byte mAuthMode;
 //    private byte AuthModeAutoSwitch = 2;
 //    private byte AuthModeOpen = 0;
@@ -266,7 +292,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 //        return false;
 //    }
 
-//    //WiFi是否加密
+    //    //WiFi是否加密
 //    public static boolean isWifiEncrypt(ScanResult result) {
 //        return !(result.capabilities.toLowerCase().indexOf("wep") != -1
 //                || result.capabilities.toLowerCase().indexOf("wpa") != -1);
@@ -283,8 +309,45 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 //            isRegFilter=false;
 //        }
         smartLink.stop();
-        if(mHelper!=null){
+        if (mHelper != null) {
             mHelper.StopListen();
         }
     }
+
+    public DeviceInfo parseData(ReceiveDatagramPacket receiveData) {
+        if (receiveData == null) {
+            return null;
+        }
+        DeviceInfo deviceInfo = null;
+//        if (receiveData.getState() == ReceiveDatagramPacket.RECEIVE_MSG_SUCCESS) {
+        InetAddress mInetAddress = receiveData.getmInetAddress();
+        byte[] data = receiveData.getData();
+        int subType = 0;
+        int contactId = bytesToInt(data, 16);
+        int rflag = bytesToInt(data, 12);
+        int type = bytesToInt(data, 20);
+        int frag = bytesToInt(data, 24);
+        int curVersion = (rflag >> 4) & 0x1;
+        if (curVersion == 1) {
+            subType = bytesToInt(data, 80);
+        }
+        String ip_address = mInetAddress.getHostAddress();
+        deviceInfo = new DeviceInfo(String.valueOf(contactId), String.valueOf(frag),
+                ip_address.substring(
+                        ip_address.lastIndexOf(".") + 1,
+                        ip_address.length()),
+                ip_address, type, rflag, subType);
+//        } else if (receiveData.getState() == ReceiveDatagramPacket.RECEIVE_MSG_ERROR) {
+//            Log.e("my", "RECEIVE_MSG_ERROR");
+//        }
+        return deviceInfo;
+    }
+
+    public static int bytesToInt(byte[] src, int offset) {
+        int value;
+        value = (src[offset] & 0xFF) | ((src[offset + 1] & 0xFF) << 8)
+                | ((src[offset + 2] & 0xFF) << 16) | ((src[offset + 3] & 0xFF) << 24);
+        return value;
+    }
+
 }
