@@ -1,7 +1,8 @@
 # SmartlinkDemo
-SmartLink配网  
+SmartLink配网   
 
-示例代码如下：
+示例代码如下：  
+
 1.初始化 smartLink：
 ```
 smartLink = new SmartLink(this, new SmartLink.OnDealSsid() {
