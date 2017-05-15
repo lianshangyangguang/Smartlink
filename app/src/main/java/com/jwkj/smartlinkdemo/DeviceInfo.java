@@ -90,7 +90,7 @@ public class DeviceInfo {
         return  "deviceId=" + contactId + " deviceType=" + type + " subType=" + subType + " ip=" + ip;
     }
 
-    public static DeviceInfo parseReceiveData(ReceiveDatagramPacket receiveData) {
+    public static DeviceInfo parseReceiveData(com.gwell.view.library.ReceiveDatagramPacket receiveData) {
         if (receiveData == null) {
             return null;
         }

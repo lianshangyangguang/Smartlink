@@ -9,9 +9,11 @@ import android.net.NetworkInfo;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
+import android.os.Handler;
 import android.text.TextUtils;
 import android.widget.Toast;
 
+import com.gwell.view.library.UDPBroadcastHelper;
 import com.mediatek.elian.ElianNative;
 
 import java.util.List;
@@ -28,6 +30,7 @@ public class SmartLink {
     boolean isSend=false;
     boolean is5GWifi=false;
     boolean isWifiEncrypt=false;
+    UDPBroadcastHelper mHelper;
 
     static {
         System.loadLibrary("elianjni");
@@ -39,6 +42,8 @@ public class SmartLink {
         this.deal = deal;
         regFilter();
         currenWifi();
+        //监听UDP广播
+        mHelper = new UDPBroadcastHelper(context);
     }
 
     public void regFilter(){
@@ -90,7 +95,7 @@ public class SmartLink {
     }
 
     //开始发包
-    public void sendWifi(String pwd){
+    public void sendWifi(String pwd, Handler handle){
         this.pwd = pwd;
         isSend=true;
         if (!isWifiConnected()||ssid == null || ssid.equals("")||ssid.equals("<unknown ssid>")) {
@@ -118,6 +123,7 @@ public class SmartLink {
             //wifi名  wifi密码  加密方式
             elain.StartSmartConnection(ssid, pwd, "", mAuthMode);
         }
+        mHelper.receive(9988, handle);
     }
 
     //停止发包
@@ -238,6 +244,13 @@ public class SmartLink {
             stopSendWifi();
             isSend=false;
         }
+        if (mHelper != null) {
+            mHelper.StopListen();
+        }
+    }
+
+    public void send(String ip,int port,String msg,Handler handler){
+        mHelper.send(ip,port,msg,handler);
     }
 
 }

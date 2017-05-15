@@ -1,4 +1,4 @@
-package com.jwkj.smartlinkdemo;
+package com.gwell.view.smalllink;
 
 import android.content.Context;
 import android.os.Bundle;
@@ -12,6 +12,8 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import com.gwell.view.library.UDPBroadcastHelper;
+import com.jwkj.smartlinkdemo.DeviceInfo;
+import com.jwkj.smartlinkdemo.SmartLink;
 
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
@@ -21,7 +23,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     EditText et_pwd,et_msg;
     String pwd = "";
     String msg = "";
-    public UDPBroadcastHelper mHelper;
+//    public UDPBroadcastHelper mHelper;
     private SmartLink smartLink;
 
     @Override
@@ -31,7 +33,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         context = this;
         initUI();
         //监听UDP广播
-        mHelper = new UDPBroadcastHelper(context);
+//        mHelper = new UDPBroadcastHelper(context);
 //        listen();
         smartLink = new SmartLink(this, new SmartLink.OnDealSsid() {
             @Override
@@ -43,7 +45,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             public void onCurrentSsid(String ssid) {
                 tx_wifiName.setText(ssid);
             }
+
         });
+//        mHelper.receive(9988, handle);
     }
 
     public void initUI() {
@@ -64,8 +68,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         switch (v.getId()) {
             case R.id.bt_send_wifi:
                 pwd = et_pwd.getText().toString().trim();
-                smartLink.sendWifi(pwd);
-                mHelper.receive(9988, handle);
+                smartLink.sendWifi(pwd, handle);
                 tx_receive.append("开始发包......\n");
                 break;
             case R.id.bt_stop:
@@ -74,30 +77,41 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 break;
             case R.id.bt_send_msg:
                 msg = et_msg.getText().toString().trim();
-//                mHelper.send("255.255.255.255",9988,msg);
+                smartLink.send("196.128.1.3", 9988, msg, new Handler() {
+                    @Override
+                    public void handleMessage(Message msg) {
+                        switch (msg.what) {
+                            case UDPBroadcastHelper.SEND_MSG_ERROR:
+                                Log.e("zxy", "HANDLER_MESSAGE_BIND_ERROR");
+                                break;
+                            case UDPBroadcastHelper.SEND_MSG_SUCCESS:
+                                Log.e("zxy", "HANDLER_MESSAGE_BIND_ERROR");
+                                break;
+                        }
+                    }
+                });
                 break;
+
         }
     }
-
-    Handler handle = new Handler() {
-        @Override
-        public void handleMessage(Message msg) {
-            // TODO Auto-generated method stub
-            switch (msg.what) {
-                case UDPBroadcastHelper.RECEIVE_MSG_ERROR:
-                    Log.e("my", "HANDLER_MESSAGE_BIND_ERROR");
-                    break;
-                case UDPBroadcastHelper.RECEIVE_MSG_SUCCESS:
-                    Bundle bundle = msg.getData();
-                    ReceiveDatagramPacket receiveData = (ReceiveDatagramPacket) bundle.getSerializable("receiveData");
-                    parseData(receiveData);
-                    break;
+        Handler handle = new Handler() {
+            @Override
+            public void handleMessage(Message msg) {
+                // TODO Auto-generated method stub
+                switch (msg.what) {
+                    case UDPBroadcastHelper.RECEIVE_MSG_ERROR:
+                        Log.e("my", "HANDLER_MESSAGE_BIND_ERROR");
+                        break;
+                    case UDPBroadcastHelper.RECEIVE_MSG_SUCCESS:
+                        Bundle bundle = msg.getData();
+                        com.gwell.view.library.ReceiveDatagramPacket receiveData = (com.gwell.view.library.ReceiveDatagramPacket) bundle.getSerializable("receiveData");
+                        parseData(receiveData);
+                        break;
+                }
             }
-        }
-//
-    };
+        };
 
-    private void parseData(ReceiveDatagramPacket receiveData) {
+    private void parseData(com.gwell.view.library.ReceiveDatagramPacket receiveData) {
         DeviceInfo deviceInfo = DeviceInfo.parseReceiveData(receiveData);
         String info = deviceInfo.toString();
         if (Integer.parseInt(deviceInfo.getFrag()) == 0) {
@@ -113,8 +127,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected void onDestroy() {
         super.onDestroy();
         smartLink.stop();
-        if (mHelper != null) {
-            mHelper.StopListen();
-        }
+//        if (mHelper != null) {
+//            mHelper.StopListen();
+//        }
     }
 }
