@@ -249,8 +249,8 @@ public class SmartLink {
         }
     }
 
-    public void send(String ip,int port,String msg,Handler handler){
-        mHelper.send(ip,port,msg,handler);
+    public void send(int port,String msg,Handler handler){
+        mHelper.send(port,msg,handler);
     }
 
 }
