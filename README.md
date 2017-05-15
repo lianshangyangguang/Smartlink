@@ -2,7 +2,6 @@
 SmartLink配网   
 
 示例代码如下：  
-
 1.初始化 smartLink：
 ```
 smartLink = new SmartLink(this, new SmartLink.OnDealSsid() {
@@ -74,7 +73,7 @@ smartLink = new SmartLink(this, new SmartLink.OnDealSsid() {
             }
         };
 ```
- 3.关闭资源
+3.关闭资源
 ```
    @Override
     protected void onDestroy() {
