@@ -1,4 +1,4 @@
-# SmartlinkDemo
+# Smartlink
 SmartLink配网   
 
 示例代码如下：  
