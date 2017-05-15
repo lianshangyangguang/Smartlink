@@ -28,8 +28,13 @@ public class SmartLink {
     boolean isSend=false;
     boolean is5GWifi=false;
     boolean isWifiEncrypt=false;
+
+    static {
+        System.loadLibrary("elianjni");
+    }
+
     //初始化时调用
-    public  SmartLink(Context context,Deal deal){
+    public  SmartLink(Context context,OnDealSsid deal){
         this.context = context;
         this.deal = deal;
         regFilter();
@@ -126,12 +131,12 @@ public class SmartLink {
         isSend=false;
     }
 
-    public interface Deal {
+    public interface OnDealSsid {
         void onNoSsid();
-        void currentSsid(String ssid);
+        void onCurrentSsid(String ssid);
     }
 
-    private Deal deal;
+    private OnDealSsid deal;
     private byte mAuthMode;
     private byte AuthModeAutoSwitch = 2;
     private byte AuthModeOpen = 0;
@@ -166,7 +171,7 @@ public class SmartLink {
             ssid = ssid.substring(1, ssid.length() - 1);
         }
         if (!ssid.equals("<unknown ssid>") && !ssid.equals("0x")&& deal != null) {
-            deal.currentSsid(ssid);
+            deal.onCurrentSsid(ssid);
         }
         List<ScanResult> wifiList = getLists(context);
         if (wifiList == null) {

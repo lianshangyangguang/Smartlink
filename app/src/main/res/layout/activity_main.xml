@@ -31,13 +31,13 @@
         android:textColorHint="@color/gray"
          />
     <Button
-        android:id="@+id/bt_send"
+        android:id="@+id/bt_send_wifi"
         android:layout_width="240dp"
         android:layout_height="40dp"
         android:layout_marginTop="20dp"
         android:layout_below="@+id/et_pwd"
         android:layout_centerHorizontal="true"
-        android:text="send"
+        android:text="send wifi"
         android:textColor="@color/text_color_black"
         android:background="@color/gray"/>
     <Button
@@ -45,16 +45,38 @@
         android:layout_width="240dp"
         android:layout_height="40dp"
         android:layout_marginTop="20dp"
-        android:layout_below="@+id/bt_send"
+        android:layout_below="@+id/bt_send_wifi"
         android:layout_centerHorizontal="true"
         android:text="stop"
+        android:textColor="@color/text_color_black"
+        android:background="@color/gray"/>
+    <EditText
+        android:id="@+id/et_msg"
+        android:layout_width="240dp"
+        android:layout_height="50dp"
+        android:layout_below="@+id/bt_stop"
+        android:layout_centerHorizontal="true"
+        android:textSize="18sp"
+        android:textColor="@color/text_color_black"
+        android:maxLines="1"
+        android:hint="请输入与设备通信的信息"
+        android:textColorHint="@color/gray"
+        />
+    <Button
+        android:id="@+id/bt_send_msg"
+        android:layout_width="240dp"
+        android:layout_height="40dp"
+        android:layout_marginTop="20dp"
+        android:layout_below="@+id/et_msg"
+        android:layout_centerHorizontal="true"
+        android:text="send msg to device"
         android:textColor="@color/text_color_black"
         android:background="@color/gray"/>
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_marginTop="10dp"
-        android:layout_below="@+id/bt_stop"
+        android:layout_below="@+id/bt_send_msg"
         >
     <TextView
         android:id="@+id/tx_receive"

@@ -1,5 +1,9 @@
 package com.jwkj.smartlinkdemo;
 
+import android.util.Log;
+
+import java.net.InetAddress;
+
 /**
  * Created by Administrator on 2017/5/14.
  */
@@ -84,6 +88,39 @@ public class DeviceInfo {
     @Override
     public String toString() {
         return  "deviceId=" + contactId + " deviceType=" + type + " subType=" + subType + " ip=" + ip;
+    }
+
+    public static DeviceInfo parseReceiveData(ReceiveDatagramPacket receiveData) {
+        if (receiveData == null) {
+            return null;
+        }
+        DeviceInfo deviceInfo = null;
+        InetAddress mInetAddress = receiveData.getmInetAddress();
+        byte[] data = receiveData.getData();
+        int subType = 0;
+        int contactId = bytesToInt(data, 16);
+        int rflag = bytesToInt(data, 12);
+        int type = bytesToInt(data, 20);
+        int frag = bytesToInt(data, 24);
+        int curVersion = (rflag >> 4) & 0x1;
+        if (curVersion == 1) {
+            subType = bytesToInt(data, 80);
+        }
+        Log.d("zxy", "parseData== " + contactId + "," + rflag + "," + type + "," + curVersion);
+        String ip_address = mInetAddress.getHostAddress();
+        deviceInfo = new DeviceInfo(String.valueOf(contactId), String.valueOf(frag),
+                ip_address.substring(
+                        ip_address.lastIndexOf(".") + 1,
+                        ip_address.length()),
+                ip_address, type, rflag, subType);
+        return deviceInfo;
+    }
+
+    public static int bytesToInt(byte[] src, int offset) {
+        int value;
+        value = (src[offset] & 0xFF) | ((src[offset + 1] & 0xFF) << 8)
+                | ((src[offset + 2] & 0xFF) << 16) | ((src[offset + 3] & 0xFF) << 24);
+        return value;
     }
 
 
