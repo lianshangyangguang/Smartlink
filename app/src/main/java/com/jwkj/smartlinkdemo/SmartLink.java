@@ -9,7 +9,6 @@ import android.net.NetworkInfo;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
-import android.os.Handler;
 import android.text.TextUtils;
 import android.widget.Toast;
 
@@ -95,7 +94,7 @@ public class SmartLink {
     }
 
     //开始发包
-    public void sendWifi(String pwd, Handler handle){
+    public void sendWifi(String pwd, UDPBroadcastHelper.OnReceive onReceive){
         this.pwd = pwd;
         isSend=true;
         if (!isWifiConnected()||ssid == null || ssid.equals("")||ssid.equals("<unknown ssid>")) {
@@ -123,7 +122,7 @@ public class SmartLink {
             //wifi名  wifi密码  加密方式
             elain.StartSmartConnection(ssid, pwd, "", mAuthMode);
         }
-        mHelper.receive(9988, handle);
+        mHelper.receive(9988, onReceive);
     }
 
     //停止发包
@@ -249,8 +248,8 @@ public class SmartLink {
         }
     }
 
-    public void send(int port,String msg,Handler handler){
-        mHelper.send(port,msg,handler);
+    public void send(int port, String msg, UDPBroadcastHelper.OnSend onSend){
+        mHelper.send(port,msg,onSend);
     }
 
 }

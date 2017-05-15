@@ -20,8 +20,8 @@ import com.jwkj.smartlinkdemo.SmartLink;
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
     private Context context;
     TextView tx_wifiName, tx_receive;
-    Button bt_send_wifi,bt_send_msg, bt_stop;
-    EditText et_pwd,et_msg;
+    Button bt_send_wifi, bt_stop;
+    EditText et_pwd;
     String pwd = "";
     String msg = "";
     private SmartLink smartLink;
@@ -50,63 +50,52 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         tx_wifiName = (TextView) findViewById(R.id.tx_wifiName);
         tx_receive = (TextView) findViewById(R.id.tx_receive);
         et_pwd = (EditText) findViewById(R.id.et_pwd);
-        et_msg = (EditText) findViewById(R.id.et_msg);
         bt_send_wifi = (Button) findViewById(R.id.bt_send_wifi);
-        bt_send_msg = (Button) findViewById(R.id.bt_send_msg);
         bt_stop = (Button) findViewById(R.id.bt_stop);
         bt_send_wifi.setOnClickListener(this);
-        bt_send_msg.setOnClickListener(this);
         bt_stop.setOnClickListener(this);
     }
+
+    Handler handler = new Handler(){
+        @Override
+        public void handleMessage(Message msg) {
+            super.handleMessage(msg);
+            switch (msg.what) {
+                case UDPBroadcastHelper.RECEIVE_MSG_ERROR:
+                    Log.e("zxy", "HANDLER_MESSAGE_BIND_ERROR");
+                    break;
+                case UDPBroadcastHelper.RECEIVE_MSG_SUCCESS:
+                    Bundle bundle = msg.getData();
+                    ReceiveDatagramPacket receiveData = (ReceiveDatagramPacket) bundle.getSerializable("receiveData");
+                    parseData(receiveData);
+                    break;
+            }
+        }
+    };
 
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.bt_send_wifi:
                 pwd = et_pwd.getText().toString().trim();
-                smartLink.sendWifi(pwd, wifiHandle);
+                smartLink.sendWifi(pwd, new UDPBroadcastHelper.OnReceive() {
+                    @Override
+                    public void onReceive(int state, Bundle bundle) {
+                        //子线程和主线程交互需要handler交互
+                        Message msg = handler.obtainMessage();
+                        msg.what = state;
+                        msg.setData(bundle);
+                        handler.sendMessage(msg);
+                    }
+                });
                 tx_receive.append("开始发包......\n");
                 break;
             case R.id.bt_stop:
                 smartLink.stopSendWifi();
                 tx_receive.append("停止发包\n");
                 break;
-            case R.id.bt_send_msg:
-                msg = et_msg.getText().toString().trim();
-                smartLink.send( 9988, msg, msgHandle);
-                break;
         }
     }
-        Handler wifiHandle = new Handler() {
-            @Override
-            public void handleMessage(Message msg) {
-                // TODO Auto-generated method stub
-                switch (msg.what) {
-                    case UDPBroadcastHelper.RECEIVE_MSG_ERROR:
-                        Log.e("zxy", "HANDLER_MESSAGE_BIND_ERROR");
-                        break;
-                    case UDPBroadcastHelper.RECEIVE_MSG_SUCCESS:
-                        Bundle bundle = msg.getData();
-                        ReceiveDatagramPacket receiveData = (ReceiveDatagramPacket) bundle.getSerializable("receiveData");
-                        parseData(receiveData);
-                        break;
-                }
-            }
-        };
-
-    Handler msgHandle = new Handler(){
-        @Override
-        public void handleMessage(Message msg) {
-            switch (msg.what) {
-                case UDPBroadcastHelper.SEND_MSG_ERROR:
-                    Log.e("zxy", "SEND_MSG_ERROR");
-                    break;
-                case UDPBroadcastHelper.SEND_MSG_SUCCESS:
-                    Log.e("zxy", "SEND_MSG_SUCCESS");
-                    break;
-            }
-        }
-    };
 
     private void parseData(ReceiveDatagramPacket receiveData) {
         DeviceInfo deviceInfo = DeviceInfo.parseReceiveData(receiveData);
