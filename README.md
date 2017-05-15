@@ -3,7 +3,7 @@ SmartLink配网
 
 示例代码如下：
 1.初始化 smartLink：
-'''
+```
 smartLink = new SmartLink(this, new SmartLink.OnDealSsid() {
             @Override
             public void onNoSsid() {
@@ -16,9 +16,9 @@ smartLink = new SmartLink(this, new SmartLink.OnDealSsid() {
             }
 
         });
-'''
+```
 2. 使用
-'''
+```
  @Override
     public void onClick(View v) {
         switch (v.getId()) {
@@ -72,12 +72,12 @@ smartLink = new SmartLink(this, new SmartLink.OnDealSsid() {
                  }
             }
         };
- '''
+```
  3.关闭资源
- '''
+```
    @Override
     protected void onDestroy() {
         super.onDestroy();
         smartLink.stop();
     }
- '''
+```
