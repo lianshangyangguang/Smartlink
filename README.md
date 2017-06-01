@@ -1,4 +1,5 @@
 # Smartlink
+[![](https://jitpack.io/v/lianshangyangguang/Smartlink.svg)](https://jitpack.io/#lianshangyangguang/Smartlink)  
 SmartLink配网   
 
 示例代码如下：  
