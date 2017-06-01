@@ -2,8 +2,6 @@ package com.gwell.view.smalllink;
 
 import android.content.Context;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
@@ -23,7 +21,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     Button bt_send_wifi, bt_stop;
     EditText et_pwd;
     String pwd = "";
-    String msg = "";
     private SmartLink smartLink;
 
     @Override
@@ -56,23 +53,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         bt_stop.setOnClickListener(this);
     }
 
-    Handler handler = new Handler(){
-        @Override
-        public void handleMessage(Message msg) {
-            super.handleMessage(msg);
-            switch (msg.what) {
-                case UDPBroadcastHelper.RECEIVE_MSG_ERROR:
-                    Log.e("zxy", "HANDLER_MESSAGE_BIND_ERROR");
-                    break;
-                case UDPBroadcastHelper.RECEIVE_MSG_SUCCESS:
-                    Bundle bundle = msg.getData();
-                    ReceiveDatagramPacket receiveData = (ReceiveDatagramPacket) bundle.getSerializable("receiveData");
-                    parseData(receiveData);
-                    break;
-            }
-        }
-    };
-
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
@@ -81,11 +61,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 smartLink.sendWifi(pwd, new UDPBroadcastHelper.OnReceive() {
                     @Override
                     public void onReceive(int state, Bundle bundle) {
-                        //子线程和主线程交互需要handler交互
-                        Message msg = handler.obtainMessage();
-                        msg.what = state;
-                        msg.setData(bundle);
-                        handler.sendMessage(msg);
+                        if (state == UDPBroadcastHelper.RECEIVE_MSG_ERROR){
+                            Log.e("zxy", "HANDLER_MESSAGE_BIND_ERROR");
+                        }else if (state == UDPBroadcastHelper.RECEIVE_MSG_SUCCESS){
+                            ReceiveDatagramPacket receiveData = (ReceiveDatagramPacket) bundle.getSerializable("receiveData");
+                            parseData(receiveData);
+                        }
                     }
                 });
                 tx_receive.append("开始发包......\n");
