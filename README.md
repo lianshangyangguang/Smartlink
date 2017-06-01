@@ -25,53 +25,25 @@ smartLink = new SmartLink(this, new SmartLink.OnDealSsid() {
             case R.id.bt_send_wifi:
                 pwd = et_pwd.getText().toString().trim();
                 //开始发包
-                smartLink.sendWifi(pwd, wifiHandle);
+                smartLink.sendWifi(pwd, new UDPBroadcastHelper.OnReceive() {
+                                   @Override
+                                   public void onReceive(int state, Bundle bundle) {
+                                       if (state == UDPBroadcastHelper.RECEIVE_MSG_ERROR){
+                                           Log.e("zxy", "HANDLER_MESSAGE_BIND_ERROR");
+                                       }else if (state == UDPBroadcastHelper.RECEIVE_MSG_SUCCESS){
+                                           ReceiveDatagramPacket receiveData = (ReceiveDatagramPacket) bundle.getSerializable("receiveData");
+                                           parseData(receiveData);
+                                       }
+                                   }
+                               });
                 break;
             case R.id.bt_stop:
                 //停止发包
                 smartLink.stopSendWifi();
                 break;
-            case R.id.bt_send_msg:
-                //与设备通信
-                msg = et_msg.getText().toString().trim();
-                smartLink.send("196.128.1.3", 9988, msg, msgHandle);
-                break;
-
         }
     }
     
-    //处理接收信息
-    Handler wifiHandle = new Handler() {
-            @Override
-            public void handleMessage(Message msg) {
-                
-                switch (msg.what) {
-                    case UDPBroadcastHelper.RECEIVE_MSG_ERROR:
-                        Log.e("my", "HANDLER_MESSAGE_BIND_ERROR");
-                        break;
-                    case UDPBroadcastHelper.RECEIVE_MSG_SUCCESS:
-                        Bundle bundle = msg.getData();
-                        parseData(bundle);
-                        break;
-                }
-            }
-        };
-        
-    //处理发送信息
-     Handler msgHandle = new Handler() {
-            @Override
-            public void handleMessage(Message msg) {
-            
-                  switch (msg.what) {
-                      case UDPBroadcastHelper.SEND_MSG_ERROR:
-                          Log.e("zxy", "HANDLER_MESSAGE_BIND_ERROR");
-                          break;
-                      case UDPBroadcastHelper.SEND_MSG_SUCCESS:
-                          Log.e("zxy", "HANDLER_MESSAGE_BIND_ERROR");
-                          break;
-                 }
-            }
-        };
 ```
 3.关闭资源
 ```
